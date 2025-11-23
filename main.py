@@ -170,3 +170,39 @@ def show_difficulty_menu(screen):
         
         pygame.display.flip()
         clock.tick(60)
+
+def show_game_over_screen(screen, winner):
+    """Экран окончания игры"""
+    overlay = pygame.Surface((800, 800))
+    overlay.set_alpha(220)
+    overlay.fill((0, 0, 0))
+    screen.blit(overlay, (0, 0))
+    
+    big_font = pygame.font.Font(None, 72)
+    text = big_font.render(f"Победа: {winner}!", True, (255, 215, 0))
+    text_rect = text.get_rect(center=(400, 300))
+    screen.blit(text, text_rect)
+    
+    font = pygame.font.Font(None, 40)
+    restart_text = font.render("Нажмите любую клавишу", True, (255, 255, 255))
+    restart_rect = restart_text.get_rect(center=(400, 400))
+    screen.blit(restart_text, restart_rect)
+    
+    continue_text = font.render("для возврата в меню", True, (255, 255, 255))
+    continue_rect = continue_text.get_rect(center=(400, 450))
+    screen.blit(continue_text, continue_rect)
+    
+    pygame.display.flip()
+    
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                return
+            if event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN:
+                waiting = False
+
+
+if __name__ == '__main__':
+    main()
