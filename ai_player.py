@@ -6,6 +6,9 @@ class ChessAI:
         self.depth = depth
         self.color = color
         self.opponent_color = 'white' if color == 'black' else 'black'
+        self.nodes_evaluated = 0
+
+        self.transposition_table = {}
 
         self.piece_values = {
             'Pawn': 100,
@@ -15,6 +18,7 @@ class ChessAI:
             'Queen': 900,
             'King': 20000
         }
+
 
     def get_best_move(self, board):
         best_move = None
@@ -47,8 +51,18 @@ class ChessAI:
         return best_move
 
     def _minimax_alpha_beta(self, board, depth, alpha, beta, is_maximizing):
+        self.nodes_evaluated += 1
+
+        board_hash = self._get_board_hash(board)
+        if board_hash in self.transposition_table:
+            cached_depth, cached_value = self.transposition_table[board_hash]
+            if cached_depth >= depth:
+                return cached_value
+
         if depth == 0:
-            return self._evaluate_board_basic(board)
+            eval_score = self._evaluate_board_basic(board)
+            self.transposition_table[board_hash] = (depth, eval_score)
+            return eval_score
 
         color = self.color if is_maximizing else self.opponent_color
         possible_moves = self._get_all_possible_moves(board, color)
@@ -93,7 +107,20 @@ class ChessAI:
 
                 if beta <= alpha:
                     break
-            return min_eval
+
+                self.transposition_table[board_hash] = (depth, min_eval)
+                return min_eval
+
+    def _get_board_hash(self, board):
+        board_str = ""
+        for row in range(8):
+            for col in range(8):
+                piece = board.get_piece((row, col))
+                if piece:
+                    board_str += f"{piece.name[0]}{piece.color[0]}"
+                else:
+                    board_str += "."
+        return hash(board_str)
 
     def _get_all_possible_moves(self, board, color):
         moves = []
