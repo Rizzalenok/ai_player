@@ -36,12 +36,23 @@ class ChessAI:
             piece = board.get_piece(from_pos)
             captured = board.get_piece(to_pos)
             old_pos = piece.pos
+            old_has_moved = piece.has_moved
+
+            old_rook_state = None
+            if piece.name == 'King' and abs(to_pos[1] - from_pos[1]) == 2:
+                row = from_pos[0]
+                if to_pos[1] > from_pos[1]:
+                    rook = board.get_piece((row, 7))
+                    if rook:
+                        old_rook_state = (rook.pos, rook.has_moved)
 
             board.move_piece(from_pos, to_pos)
             value = self._minimax_alpha_beta(board, self.depth - 1, alpha, beta, False)
+
             board.set_piece(from_pos, piece)
             board.set_piece(to_pos, captured)
             piece.pos = old_pos
+            piece.has_moved = old_has_moved
 
             if value > best_value:
                 best_value = value
