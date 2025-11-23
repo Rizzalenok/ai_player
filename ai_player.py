@@ -19,6 +19,8 @@ class ChessAI:
     def get_best_move(self, board):
         best_move = None
         best_value = -math.inf
+        alpha = -math.inf
+        beta = math.inf
 
         possible_moves = self._get_all_possible_moves(board, self.color)
 
@@ -31,9 +33,7 @@ class ChessAI:
             old_pos = piece.pos
 
             board.move_piece(from_pos, to_pos)
-
-            value = self._minimax_basic(board, self.depth - 1, False)
-
+            value = self._minimax_alpha_beta(board, self.depth - 1, alpha, beta, False)
             board.set_piece(from_pos, piece)
             board.set_piece(to_pos, captured)
             piece.pos = old_pos
@@ -42,9 +42,11 @@ class ChessAI:
                 best_value = value
                 best_move = (from_pos, to_pos)
 
+            alpha = max(alpha, value)
+
         return best_move
 
-    def _minimax_basic(self, board, depth, is_maximizing):
+    def _minimax_alpha_beta(self, board, depth, alpha, beta, is_maximizing):
         if depth == 0:
             return self._evaluate_board_basic(board)
 
@@ -62,12 +64,16 @@ class ChessAI:
                 old_pos = piece.pos
 
                 board.move_piece(from_pos, to_pos)
-                eval = self._minimax_basic(board, depth - 1, False)
+                eval = self._minimax_alpha_beta(board, depth - 1, alpha, beta, False)
                 board.set_piece(from_pos, piece)
                 board.set_piece(to_pos, captured)
                 piece.pos = old_pos
 
                 max_eval = max(max_eval, eval)
+                alpha = max(alpha, eval)
+
+                if beta <= alpha:
+                    break
             return max_eval
         else:
             min_eval = math.inf
@@ -77,12 +83,16 @@ class ChessAI:
                 old_pos = piece.pos
 
                 board.move_piece(from_pos, to_pos)
-                eval = self._minimax_basic(board, depth - 1, True)
+                eval = self._minimax_alpha_beta(board, depth - 1, alpha, beta, True)
                 board.set_piece(from_pos, piece)
                 board.set_piece(to_pos, captured)
                 piece.pos = old_pos
 
                 min_eval = min(min_eval, eval)
+                beta = min(beta, eval)
+
+                if beta <= alpha:
+                    break
             return min_eval
 
     def _get_all_possible_moves(self, board, color):
