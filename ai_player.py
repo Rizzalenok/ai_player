@@ -29,3 +29,22 @@ class ChessAI:
                         if board.is_legal_move((row, col), move, color):
                             moves.append(((row, col), move))
         return moves
+
+    def _evaluate_board_basic(self, board):
+        score = 0
+
+        for row in range(8):
+            for col in range(8):
+                piece = board.get_piece((row, col))
+                if piece:
+                    piece_value = self.piece_values[piece.name]
+
+                    if piece.color == self.color:
+                        score += piece_value
+                    else:
+                        score -= piece_value
+
+        return score
+
+    def _get_piece_positional_value(self, piece, row, col):
+        return self.piece_values[piece.name]
