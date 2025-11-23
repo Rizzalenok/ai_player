@@ -1,3 +1,5 @@
+import math
+
 class ChessAI:
 
     def __init__(self, depth=3, color='black'):
@@ -15,8 +17,73 @@ class ChessAI:
         }
 
     def get_best_move(self, board):
+        best_move = None
+        best_value = -math.inf
+
         possible_moves = self._get_all_possible_moves(board, self.color)
-        return possible_moves[0] if possible_moves else None
+
+        if not possible_moves:
+            return None
+
+        for from_pos, to_pos in possible_moves:
+            piece = board.get_piece(from_pos)
+            captured = board.get_piece(to_pos)
+            old_pos = piece.pos
+
+            board.move_piece(from_pos, to_pos)
+
+            value = self._minimax_basic(board, self.depth - 1, False)
+
+            board.set_piece(from_pos, piece)
+            board.set_piece(to_pos, captured)
+            piece.pos = old_pos
+
+            if value > best_value:
+                best_value = value
+                best_move = (from_pos, to_pos)
+
+        return best_move
+
+    def _minimax_basic(self, board, depth, is_maximizing):
+        if depth == 0:
+            return self._evaluate_board_basic(board)
+
+        color = self.color if is_maximizing else self.opponent_color
+        possible_moves = self._get_all_possible_moves(board, color)
+
+        if not possible_moves:
+            return 0
+
+        if is_maximizing:
+            max_eval = -math.inf
+            for from_pos, to_pos in possible_moves:
+                piece = board.get_piece(from_pos)
+                captured = board.get_piece(to_pos)
+                old_pos = piece.pos
+
+                board.move_piece(from_pos, to_pos)
+                eval = self._minimax_basic(board, depth - 1, False)
+                board.set_piece(from_pos, piece)
+                board.set_piece(to_pos, captured)
+                piece.pos = old_pos
+
+                max_eval = max(max_eval, eval)
+            return max_eval
+        else:
+            min_eval = math.inf
+            for from_pos, to_pos in possible_moves:
+                piece = board.get_piece(from_pos)
+                captured = board.get_piece(to_pos)
+                old_pos = piece.pos
+
+                board.move_piece(from_pos, to_pos)
+                eval = self._minimax_basic(board, depth - 1, True)
+                board.set_piece(from_pos, piece)
+                board.set_piece(to_pos, captured)
+                piece.pos = old_pos
+
+                min_eval = min(min_eval, eval)
+            return min_eval
 
     def _get_all_possible_moves(self, board, color):
         moves = []
